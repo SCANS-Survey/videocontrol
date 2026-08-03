@@ -3,12 +3,21 @@ package loggerForms.videocontrol;
 import java.io.Serializable;
 import java.util.TreeMap;
 
+import loggerForms.videocontrol.protocols.AMPParameters;
+
 public class VideoParameters implements Cloneable, Serializable {
 
 	public static final long serialVersionUID = 1L;
 	
-	public TreeMap<String, DeviceParameters> deviceParameters = new TreeMap();
+	private TreeMap<String, DeviceParameters> deviceParameters = new TreeMap();
 	
+	/**
+	 * @return the deviceParameters
+	 */
+	public TreeMap<String, DeviceParameters> getDeviceParameters() {
+		return deviceParameters;
+	}
+
 	public DeviceParameters getDeviceParameters(String devName) {
 		return deviceParameters.get(devName);
 	}
