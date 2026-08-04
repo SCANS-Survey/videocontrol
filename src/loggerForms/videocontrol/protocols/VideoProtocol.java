@@ -5,6 +5,7 @@ import java.awt.Window;
 import PamView.dialog.PamDialogPanel;
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
 public abstract class VideoProtocol {
 
@@ -34,6 +35,12 @@ public abstract class VideoProtocol {
 	abstract public boolean connect();
 	
 	/**
+	 * Disconnect to the video system and start to monitor for messages
+	 * @return
+	 */
+	abstract public boolean dicconnect();
+	
+	/**
 	 * Start recording
 	 * @return true if OK
 	 */
@@ -45,13 +52,6 @@ public abstract class VideoProtocol {
 	 */
 	abstract public boolean stopRecording();
 	
-	/**
-	 * Get a dialog panel
-	 * @param parent
-	 * @return
-	 */
-	abstract public PamDialogPanel getDialogPanel(Window parent);
-
 	/**
 	 * @return the videoControl
 	 */

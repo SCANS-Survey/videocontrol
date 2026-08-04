@@ -5,6 +5,7 @@ import java.awt.Window;
 import PamView.dialog.PamDialogPanel;
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
 public class LANCProtocol extends VideoProtocol {
 
@@ -32,12 +33,6 @@ public class LANCProtocol extends VideoProtocol {
 	}
 
 	@Override
-	public PamDialogPanel getDialogPanel(Window parent) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public LANCParameters getDeviceParameters() {
 		DeviceParameters params = super.getDeviceParameters();
 		if (params instanceof LANCParameters) {
@@ -46,6 +41,12 @@ public class LANCProtocol extends VideoProtocol {
 		else {
 			return new LANCParameters(getProtocolProvider().getName());
 		}
+	}
+
+	@Override
+	public boolean dicconnect() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

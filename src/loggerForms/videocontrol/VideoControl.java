@@ -16,7 +16,7 @@ import PamController.PamSettings;
 import loggerForms.videocontrol.protocols.AMPProvider;
 import loggerForms.videocontrol.protocols.LANCProvider;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
-import loggerForms.videocontrol.swing.VideoDialog;
+import loggerForms.videocontrol.swing.dialog.VideoDialog2;
 
 public class VideoControl extends PamControlledUnit implements PamSettings {
 
@@ -59,7 +59,7 @@ public class VideoControl extends PamControlledUnit implements PamSettings {
 	}
 
 	protected void showSettingsDialog(Frame parentFrame) {
-		VideoParameters newParams = VideoDialog.showDialog(parentFrame, this, videoParameters);
+		VideoParameters newParams = VideoDialog2.showDialog(parentFrame, this);
 	}
 	
 	/**
@@ -90,6 +90,13 @@ public class VideoControl extends PamControlledUnit implements PamSettings {
 	public boolean restoreSettings(PamControlledUnitSettings pamControlledUnitSettings) {
 		this.videoParameters = (VideoParameters) pamControlledUnitSettings.getSettings();
 		return true;
+	}
+
+	/**
+	 * @return the videoParameters
+	 */
+	public VideoParameters getVideoParameters() {
+		return videoParameters;
 	}
 	
 	

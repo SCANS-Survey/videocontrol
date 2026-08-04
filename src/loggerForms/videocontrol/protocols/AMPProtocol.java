@@ -5,6 +5,7 @@ import java.awt.Window;
 import PamView.dialog.PamDialogPanel;
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
 public class AMPProtocol extends VideoProtocol {
 
@@ -53,8 +54,10 @@ public class AMPProtocol extends VideoProtocol {
 	}
 
 	@Override
-	public PamDialogPanel getDialogPanel(Window parent) {
-		return new AMPDialogPanel(this, getDeviceParameters());
+	public boolean dicconnect() {
+		// TODO Auto-generated method stub
+		return false;
 	}
+
 
 }

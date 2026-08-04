@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Parameters for a single device. 
  */
-public abstract class DeviceParameters implements Cloneable, Serializable {
+public abstract class DeviceParameters implements Cloneable, Serializable, Comparable<DeviceParameters> {
 
 	public static final long serialVersionUID = 1L;
 
@@ -42,6 +42,14 @@ public abstract class DeviceParameters implements Cloneable, Serializable {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public int compareTo(DeviceParameters o) {
+		if (name == null) {
+			return 1;
+		}
+		return name.compareTo(o.name);
 	}
 	
 	

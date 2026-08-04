@@ -10,25 +10,28 @@ import javax.swing.JTextField;
 
 import PamView.dialog.PamDialogPanel;
 import PamView.dialog.PamGridBagContraints;
+import loggerForms.videocontrol.DeviceParameters;
+import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
-public class AMPDialogPanel implements PamDialogPanel {
+public class AMPDialogPanel implements ProtocolDialogPanel {
 
 	private JPanel mainPanel;
 
-	private AMPProtocol ampProtocol;
+	private AMPProvider ampProtocol;
 
 	private JTextField ipAddress;
 
 	private JTextField port;
 
+	private AMPParameters ampParameters;
+
 	/**
-	 * @param ampProtocol
+	 * @param ampProvider
 	 * @param ampParameters
 	 */
-	public AMPDialogPanel(AMPProtocol ampProtocol, AMPParameters ampParameters) {
+	public AMPDialogPanel(AMPProvider ampProvider) {
 		super();
-		this.ampProtocol = ampProtocol;
-		this.ampParameters = ampParameters;
+		this.ampProtocol = ampProvider;
 		mainPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new PamGridBagContraints();
 		mainPanel.add(new JLabel("ip address", JLabel.RIGHT), c);
@@ -42,7 +45,7 @@ public class AMPDialogPanel implements PamDialogPanel {
 		mainPanel.add(port = new JTextField(5), c);
 	}
 
-	private AMPParameters ampParameters;
+//	private AMPParameters ampParameters;
 
 	@Override
 	public JComponent getDialogComponent() {
@@ -50,24 +53,28 @@ public class AMPDialogPanel implements PamDialogPanel {
 	}
 
 	@Override
-	public void setParams() {
+	public void setParams(DeviceParameters deviceParameters) {
+		if (deviceParameters instanceof AMPParameters == false) {
+			deviceParameters = ampProtocol.createParameters(deviceParameters);
+		}
+		ampParameters = (AMPParameters) deviceParameters;
 		ipAddress.setText(ampParameters.ipAddress);
 		port.setText(String.format("%d", ampParameters.port));
 	}
 
 	@Override
-	public boolean getParams() {
+	public DeviceParameters getParams() {
 		ampParameters.ipAddress = ipAddress.getText();
 		if (ampParameters.ipAddress == null || ampParameters.ipAddress.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			ampParameters.port = Integer.valueOf(port.getText());
 		}
 		catch (NumberFormatException e) {
-			return false;
+			return null;
 		}
-		return true;
+		return ampParameters;
 	}
 
 }
