@@ -13,6 +13,6 @@ public class AMPParameters extends DeviceParameters {
 	
 	public String ipAddress;
 	
-	public int port = 1881;
+	public int port = 3811;
 
 }

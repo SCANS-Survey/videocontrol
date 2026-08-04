@@ -38,7 +38,7 @@ public abstract class VideoProtocol {
 	 * Disconnect to the video system and start to monitor for messages
 	 * @return
 	 */
-	abstract public boolean dicconnect();
+	abstract public boolean disconnect();
 	
 	/**
 	 * Start recording

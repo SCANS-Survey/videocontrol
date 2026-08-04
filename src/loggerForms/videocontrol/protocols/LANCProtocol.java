@@ -44,7 +44,7 @@ public class LANCProtocol extends VideoProtocol {
 	}
 
 	@Override
-	public boolean dicconnect() {
+	public boolean disconnect() {
 		// TODO Auto-generated method stub
 		return false;
 	}
