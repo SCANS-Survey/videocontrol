@@ -24,7 +24,6 @@ public class LumixProvider extends VideoProtocolProvider<LumixParameters> {
 
 	@Override
 	public ProtocolDialogPanel getDialogPanel(Window parent) {
-		// TODO Auto-generated method stub
 		return new LumixDialogPanel(this);
 	}
 

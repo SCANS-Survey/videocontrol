@@ -1,17 +1,36 @@
 package loggerForms.videocontrol.protocols.lumix;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import PamView.dialog.PamGridBagContraints;
 import loggerForms.videocontrol.DeviceParameters;
+import loggerForms.videocontrol.protocols.amp.AMPParameters;
 import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
 public class LumixDialogPanel implements ProtocolDialogPanel {
 	
 	private JPanel mainPanel;
+	
+	private JTextField ipAddress;
+
+	private LumixProvider lumixProvider;
+
+	private LumixParameters lumixParameters;
 
 	public LumixDialogPanel(LumixProvider lumixProvider) {
-		mainPanel = new JPanel();
+		this.lumixProvider = lumixProvider;
+		mainPanel = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new PamGridBagContraints();
+		mainPanel.add(new JLabel("ip address", JLabel.RIGHT), c);
+		c.gridx++;
+		mainPanel.add(ipAddress = new JTextField(15));
+		
 	}
 
 	@Override
@@ -21,14 +40,17 @@ public class LumixDialogPanel implements ProtocolDialogPanel {
 
 	@Override
 	public void setParams(DeviceParameters deviceParameters) {
-		// TODO Auto-generated method stub
-
+		if (deviceParameters instanceof LumixParameters == false) {
+			deviceParameters = lumixProvider.createParameters(deviceParameters);
+		}
+		lumixParameters = (LumixParameters) deviceParameters; 
+		ipAddress.setText(lumixParameters.ipAddress);
 	}
 
 	@Override
 	public DeviceParameters getParams() {
-		// TODO Auto-generated method stub
-		return null;
+		lumixParameters.ipAddress = ipAddress.getText();
+		return lumixParameters;
 	}
 
 }

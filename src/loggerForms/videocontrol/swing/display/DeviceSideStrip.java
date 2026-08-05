@@ -177,11 +177,15 @@ public class DeviceSideStrip extends PamPanel implements VideoObserver {
 			break;
 		case IDLE:
 			recStatus.setText(currentStatus.getRecordState().toString());
-			recStatus.setToolTipText(null);
+			recStatus.setToolTipText(currentStatus.getMessage());
 			break;
 		case RECORDING:
 			recStatus.setText(String.format("Rec. %ds remaining", currentStatus.getRemaining()));
 			recStatus.setToolTipText(null);
+			break;
+		case CONNECTING:
+			recStatus.setText("Connecting");
+			recStatus.setToolTipText(currentStatus.getMessage());
 			break;
 		default:
 			break;

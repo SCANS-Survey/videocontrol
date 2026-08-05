@@ -14,14 +14,16 @@ import PamController.PamControlledUnitSettings;
 import PamController.PamSettingManager;
 import PamController.PamSettings;
 import PamView.PamSidePanel;
+import loggerForms.actions.ActionOwner;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 import loggerForms.videocontrol.protocols.amp.AMPProvider;
 import loggerForms.videocontrol.protocols.lanc.LANCProvider;
+import loggerForms.videocontrol.protocols.lumix.LumixProvider;
 import loggerForms.videocontrol.swing.dialog.VideoDialog2;
 import loggerForms.videocontrol.swing.display.VideoSidePanel;
 
-public class VideoControl extends PamControlledUnit implements PamSettings {
+public class VideoControl extends PamControlledUnit implements PamSettings, ActionOwner {
 
 	public static final String unitType = "Video Control";
 	
@@ -51,6 +53,7 @@ public class VideoControl extends PamControlledUnit implements PamSettings {
 		
 		protocolProviders.add(new AMPProvider());
 		protocolProviders.add(new LANCProvider());
+		protocolProviders.add(new LumixProvider());
 		
 		videoProcess = new VideoProcess(this);
 		addPamProcess(videoProcess);
@@ -88,8 +91,9 @@ public class VideoControl extends PamControlledUnit implements PamSettings {
 	}
 	
 	private void setupEverything() {
-		videoProcess.setupEverything();
+		videoProcess.createEverything();
 		notifyConfigurationChange();
+		videoProcess.connectEverything();
 	}
 
 	/**

@@ -3,6 +3,8 @@ package loggerForms.videocontrol;
 import java.util.ArrayList;
 
 import PamguardMVC.PamProcess;
+import loggerForms.actions.ActionOwner;
+import loggerForms.actions.LoggerActions;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 
@@ -17,8 +19,9 @@ public class VideoProcess extends PamProcess {
 		this.videoControl = videoControl;
 	}
 
-	public void setupEverything() {
+	public void createEverything() {
 		stopEverything();
+		clearOldActions();
 		VideoParameters params = videoControl.getVideoParameters();
 		ArrayList<DeviceParameters> devices = params.getDeviceParameters();
 		for (int i = 0; i < devices.size(); i++) {
@@ -30,7 +33,21 @@ public class VideoProcess extends PamProcess {
 			}
 			VideoProtocol protocol = provider.getProtocol(videoControl, deviceParameters);
 			runningProtocols.add(protocol);
-			protocol.connect();
+			// and set up the logger action
+			LoggerActions.getInstance().registerAction(VideoButtonAction.createAction(videoControl, protocol));
+		}
+	}
+
+	/**
+	 * Remove all old logger actions
+	 */
+	private void clearOldActions() {
+		LoggerActions.getInstance().removeAllOwnersActions(videoControl);
+	}
+
+	public void connectEverything() {
+		for (VideoProtocol vp : runningProtocols) {
+			vp.connect();
 		}
 	}
 	
@@ -60,5 +77,6 @@ public class VideoProcess extends PamProcess {
 		// TODO Auto-generated method stub
 
 	}
+
 
 }

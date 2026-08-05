@@ -7,6 +7,8 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import loggerForms.videocontrol.DeviceParameters;
+import loggerForms.videocontrol.RecordState;
+import loggerForms.videocontrol.StatusMessage;
 import loggerForms.videocontrol.VideoControl;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
@@ -19,7 +21,9 @@ import loggerForms.videocontrol.protocols.VideoProtocolProvider;
  */
 public class LumixProtocol extends VideoProtocol {
 
-	private HttpClient client;
+	private LumixCameraControl lumixControl;
+	
+	private volatile Thread connectThread;
 
 	public LumixProtocol(VideoControl videoControl, VideoProtocolProvider protocolProvider,
 			DeviceParameters devideParameters) {
@@ -28,7 +32,27 @@ public class LumixProtocol extends VideoProtocol {
 
 	@Override
 	public boolean connect() {
-		client = HttpClient.newHttpClient();
+		LumixParameters params = getDeviceParameters();
+		lumixControl = new LumixCameraControl(params.ipAddress);
+		if (connectThread != null) {
+			connectThread.interrupt();
+		}
+		getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.CONNECTING, null));
+		connectThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				boolean ok = lumixControl.startCameraControl();
+				if (ok == false) {
+					getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.ERROR, "Can't connect"));
+				}
+				else {
+					getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.IDLE, null));
+				}
+				connectThread = null;
+			}
+		});
+		connectThread.start();
+		
 		return true;
 	}
 
@@ -39,21 +63,38 @@ public class LumixProtocol extends VideoProtocol {
 	}
 
 	@Override
+	public LumixParameters getDeviceParameters() {
+		DeviceParameters deviceParameters = super.getDeviceParameters();
+		if (deviceParameters instanceof LumixParameters) {
+			return (LumixParameters) deviceParameters;
+		}
+		else {
+			return new LumixParameters(LumixProvider._providerName);
+		}
+	}
+
+	@Override
+	public void setDeviceParameters(DeviceParameters deviceParameters) {
+		if (deviceParameters instanceof LumixParameters) {
+			super.setDeviceParameters(deviceParameters);
+		}
+		else {
+			super.setDeviceParameters(new LumixParameters(LumixProvider._providerName));
+		}
+	}
+
+	@Override
 	public boolean startRecording() {
-		   HttpRequest request = HttpRequest.newBuilder()
-			         .uri(URI.create("http://foo.com/"))
-			         .build();
-			   client.sendAsync(request, BodyHandlers.ofString())
-			         .thenApply(HttpResponse::body)
-			         .thenAccept(System.out::println)
-			         .join(); 
-		return false;
+		String resp = lumixControl.videoRecordStart();
+		boolean ok = lumixControl.checkResponse(resp);
+		return ok;
 	}
 
 	@Override
 	public boolean stopRecording() {
-		// TODO Auto-generated method stub
-		return false;
+		String resp = lumixControl.videoRecordStop();
+		boolean ok = lumixControl.checkResponse(resp);
+		return ok;
 	}
 
 }

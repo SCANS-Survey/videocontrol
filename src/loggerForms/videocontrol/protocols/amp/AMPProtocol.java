@@ -45,9 +45,6 @@ public class AMPProtocol extends VideoProtocol {
 	@Override
 	public boolean startRecording() {
 		boolean ok = writeStringCommand(startCmd);
-		if (ok) {
-			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.RECORDING, 20));
-		}
 		return ok;
 	}
 

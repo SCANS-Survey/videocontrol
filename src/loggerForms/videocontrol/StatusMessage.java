@@ -63,6 +63,23 @@ public class StatusMessage {
 	public int getRemaining() {
 		return remaining;
 	}
+
+	@Override
+	public String toString() {
+		switch (recordState) {
+		case RECORDING:
+			return String.format("Recording %ds remaining", remaining);
+		case ERROR:
+		case IDLE:
+		case CONNECTING:
+			String msg = recordState.toString();
+			if (message != null) {
+				msg += ": " + message;
+			}
+			return msg;
+		}
+		return super.toString();
+	}
 	
 	
 }

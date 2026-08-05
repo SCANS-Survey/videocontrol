@@ -8,6 +8,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,12 +23,17 @@ public class LumixCameraControl {
 	private final String camIp;
 	private final String baseurl;
 	private final HttpClient client;
+	private int timeoutSeconds = 2;
 
 	public LumixCameraControl(String camIp) {
+		this(camIp, 2);
+	}
+	
+	public LumixCameraControl(String camIp, int timeoutSeconds) {
 		this.camIp = camIp;
+		this.timeoutSeconds = timeoutSeconds;
 		this.baseurl = "http://" + camIp + "/cam.cgi";
 		this.client = HttpClient.newHttpClient();
-		startCameraControl();
 	}
 
 	private String sendGet(Map<String, String> params) {
@@ -42,25 +48,27 @@ public class LumixCameraControl {
 			String uri = baseurl + "?" + sb.toString();
 			HttpRequest request = HttpRequest.newBuilder()
 				.uri(URI.create(uri))
+				.timeout(Duration.ofSeconds(timeoutSeconds))
 				.GET()
 				.build();
 			HttpResponse<String> resp = client.send(request, BodyHandlers.ofString());
 			return resp.body();
 		} catch (IOException | InterruptedException ex) {
 			Thread.currentThread().interrupt();
-			System.err.println("Error sending request: " + ex.getMessage());
+//			System.err.println("Error sending request: " + ex.getMessage());
 			return null;
 		}
 	}
 
-	public void startCameraControl() {
+	public boolean startCameraControl() {
 		Map<String, String> params = new HashMap<>();
 		params.put("mode", "camcmd");
 		params.put("value", "recmode");
 		String resp = sendGet(params);
-		if (checkResponse(resp)) {
-			System.out.println("Connected");
-		}
+		return checkResponse(resp);
+//		if (checkResponse(resp)) {
+//			System.out.println("Connected");
+//		}
 	}
 
 	public boolean startStream(int udpPort) {
@@ -384,5 +392,19 @@ public class LumixCameraControl {
 			if (resp != null) System.err.println(resp);
 			return false;
 		}
+	}
+
+	/**
+	 * @return the timeoutSeconds
+	 */
+	public int getTimeoutSeconds() {
+		return timeoutSeconds;
+	}
+
+	/**
+	 * @param timeoutSeconds the timeoutSeconds to set
+	 */
+	public void setTimeoutSeconds(int timeoutSeconds) {
+		this.timeoutSeconds = timeoutSeconds;
 	}
 }

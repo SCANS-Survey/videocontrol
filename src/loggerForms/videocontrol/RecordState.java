@@ -1,7 +1,7 @@
 package loggerForms.videocontrol;
 
 public enum RecordState {
-	IDLE, RECORDING, ERROR;
+	IDLE, RECORDING, ERROR, CONNECTING;
 
 	@Override
 	public String toString() {
@@ -12,6 +12,8 @@ public enum RecordState {
 			return "Idle";
 		case RECORDING:
 			return "Recording";
+		case CONNECTING:
+			return "Connecting";
 		default:
 			break;
 
