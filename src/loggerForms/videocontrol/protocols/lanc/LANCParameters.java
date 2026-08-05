@@ -1,4 +1,4 @@
-package loggerForms.videocontrol.protocols;
+package loggerForms.videocontrol.protocols.lanc;
 
 import loggerForms.videocontrol.DeviceParameters;
 

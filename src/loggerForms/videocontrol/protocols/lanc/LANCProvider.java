@@ -1,9 +1,11 @@
-package loggerForms.videocontrol.protocols;
+package loggerForms.videocontrol.protocols.lanc;
 
 import java.awt.Window;
 
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.protocols.VideoProtocol;
+import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
 public class LANCProvider extends VideoProtocolProvider<LANCParameters> {

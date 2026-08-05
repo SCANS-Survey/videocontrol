@@ -1,4 +1,4 @@
-package loggerForms.videocontrol.protocols;
+package loggerForms.videocontrol.protocols.amp;
 
 import loggerForms.videocontrol.DeviceParameters;
 

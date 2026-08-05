@@ -17,8 +17,8 @@ import PamView.dialog.PamDialog;
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
 import loggerForms.videocontrol.VideoParameters;
-import loggerForms.videocontrol.protocols.AMPParameters;
-import loggerForms.videocontrol.protocols.AMPProvider;
+import loggerForms.videocontrol.protocols.amp.AMPParameters;
+import loggerForms.videocontrol.protocols.amp.AMPProvider;
 
 public class VideoDialog2 extends PamDialog {
 

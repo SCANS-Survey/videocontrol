@@ -1,4 +1,4 @@
-package loggerForms.videocontrol.protocols;
+package loggerForms.videocontrol.protocols.amp;
 
 import java.awt.Window;
 import java.io.BufferedReader;
@@ -15,6 +15,8 @@ import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.RecordState;
 import loggerForms.videocontrol.StatusMessage;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.protocols.VideoProtocol;
+import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 
 /**
  * AMP Protocol used a TCP IP link to the camera. 

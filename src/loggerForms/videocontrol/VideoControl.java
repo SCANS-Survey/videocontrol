@@ -14,10 +14,10 @@ import PamController.PamControlledUnitSettings;
 import PamController.PamSettingManager;
 import PamController.PamSettings;
 import PamView.PamSidePanel;
-import loggerForms.videocontrol.protocols.AMPProvider;
-import loggerForms.videocontrol.protocols.LANCProvider;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
+import loggerForms.videocontrol.protocols.amp.AMPProvider;
+import loggerForms.videocontrol.protocols.lanc.LANCProvider;
 import loggerForms.videocontrol.swing.dialog.VideoDialog2;
 import loggerForms.videocontrol.swing.display.VideoSidePanel;
 

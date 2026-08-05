@@ -21,9 +21,9 @@ import PamView.dialog.PamGridBagContraints;
 import PamView.panel.PamAlignmentPanel;
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
-import loggerForms.videocontrol.protocols.AMPProvider;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
+import loggerForms.videocontrol.protocols.amp.AMPProvider;
 
 /**
  * Sub panel for main dialog. 

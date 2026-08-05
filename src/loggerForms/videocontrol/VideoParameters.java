@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import loggerForms.videocontrol.protocols.AMPParameters;
+import loggerForms.videocontrol.protocols.amp.AMPParameters;
 
 public class VideoParameters implements Cloneable, Serializable {
 

@@ -1,9 +1,11 @@
-package loggerForms.videocontrol.protocols;
+package loggerForms.videocontrol.protocols.amp;
 
 import java.awt.Window;
 
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.protocols.VideoProtocol;
+import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
 public class AMPProvider extends VideoProtocolProvider<AMPParameters> {
@@ -25,7 +27,6 @@ public class AMPProvider extends VideoProtocolProvider<AMPParameters> {
 
 	@Override
 	public ProtocolDialogPanel getDialogPanel(Window parent) {
-		// TODO Auto-generated method stub
 		return new AMPDialogPanel(this);
 	}
 
