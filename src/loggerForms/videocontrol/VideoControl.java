@@ -18,6 +18,7 @@ import loggerForms.actions.ActionOwner;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 import loggerForms.videocontrol.protocols.amp.AMPProvider;
+import loggerForms.videocontrol.protocols.canon.CanonProvider;
 import loggerForms.videocontrol.protocols.lanc.LANCProvider;
 import loggerForms.videocontrol.protocols.lumix.LumixProvider;
 import loggerForms.videocontrol.swing.dialog.VideoDialog2;
@@ -54,6 +55,7 @@ public class VideoControl extends PamControlledUnit implements PamSettings, Acti
 		protocolProviders.add(new AMPProvider());
 		protocolProviders.add(new LANCProvider());
 		protocolProviders.add(new LumixProvider());
+		protocolProviders.add(new CanonProvider());
 		
 		videoProcess = new VideoProcess(this);
 		addPamProcess(videoProcess);

@@ -32,13 +32,13 @@ public abstract class VideoProtocol {
 	/**
 	 * @param videoControl
 	 * @param protocolProvider
-	 * @param devideParameters 
+	 * @param deviceParameters 
 	 */
-	public VideoProtocol(VideoControl videoControl, VideoProtocolProvider protocolProvider, DeviceParameters devideParameters) {
+	public VideoProtocol(VideoControl videoControl, VideoProtocolProvider protocolProvider, DeviceParameters deviceParameters) {
 		super();
 		this.videoControl = videoControl;
 		this.protocolProvider = protocolProvider;
-		this.deviceParameters = devideParameters;
+		this.deviceParameters = deviceParameters;
 		// create timer, but don't start it. 
 		recordEndTimer = new Timer(250, new ActionListener() {
 			@Override
