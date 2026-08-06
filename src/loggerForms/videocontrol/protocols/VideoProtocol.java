@@ -106,7 +106,7 @@ public abstract class VideoProtocol {
 	}
 
 	/**
-	 * Call from logger buttons to run an action, which will be to record for the set ammount of time
+	 * Call from logger buttons to run an action, which will be to record for the set amount of time
 	 * this should be the same for all protocols. 
 	 * @param loggerForm
 	 * @param loggerControl
