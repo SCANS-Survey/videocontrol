@@ -1,6 +1,7 @@
 package loggerForms.videocontrol.protocols.lumix;
 
 import loggerForms.videocontrol.DeviceParameters;
+import loggerForms.videocontrol.protocols.ShootMode;
 
 public class LumixParameters extends DeviceParameters {
 
@@ -8,8 +9,21 @@ public class LumixParameters extends DeviceParameters {
 	
 	public String ipAddress = "";
 	
+	private ShootMode shootMode = ShootMode.VIDEO;
+	
 	public LumixParameters(String providerName) {
 		super(providerName);
+	}
+
+	public ShootMode getShootMode() {
+		if (shootMode == null) {
+			shootMode = ShootMode.VIDEO;
+		}
+		return shootMode;
+	}
+
+	public void setShootMode(ShootMode shootMode) {
+		this.shootMode = shootMode;
 	}
 	
 

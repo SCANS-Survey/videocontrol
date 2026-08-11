@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import PamView.PamSymbol;
@@ -54,25 +55,14 @@ public class DeviceSideStrip extends PamPanel implements VideoObserver {
 		stateButton.addMouseListener(new StateMouse());
 		recStatus = new JTextField(12);
 		recStatus.setEditable(false);
-		setLayout(new GridBagLayout());
-		GridBagConstraints c = new PamGridBagContraints();
-		c.ipadx = 2;
-		c.ipady = 0;
-		c.insets = new Insets(0, 0, 0, 0);
-		c.gridwidth = 2;
-		add(new JLabel(videoProtocol.getDeviceParameters().name, JLabel.LEFT), c);
-		c.gridy++;
-		c.gridwidth = 1;
-		add(stateButton, c);
-		c.gridx++;
-		add(recStatus, c);
+		setLayout(new BorderLayout());
+		add(new JLabel(videoProtocol.getDeviceParameters().name, JLabel.LEFT), BorderLayout.NORTH);
+		add(stateButton, BorderLayout.WEST);
+		add(recStatus, BorderLayout.CENTER);
 		
 		String tip = videoProtocol.getProtocolProvider().getName();
 		this.setToolTipText(tip);
 		
-		// don't do this, because it causes a concurrent mod exception while the list is creating .
-//		videoControl.addObserver(this);
-//		recButton = new JButton()
 	}
 	
 	private class StateMouse extends MouseAdapter {
@@ -172,8 +162,13 @@ public class DeviceSideStrip extends PamPanel implements VideoObserver {
 		this.currentStatus = statusMessage;
 		switch (currentStatus.getRecordState()) {
 		case ERROR:
-			recStatus.setText("Error");
-			recStatus.setToolTipText(currentStatus.getMessage());
+			if (currentStatus.getMessage() != null) {
+				recStatus.setText(currentStatus.getMessage());
+			}
+			else {
+				recStatus.setText("Error");
+			}
+			recStatus.setToolTipText("Error: " + currentStatus.getMessage());
 			break;
 		case IDLE:
 			recStatus.setText(currentStatus.getRecordState().toString());

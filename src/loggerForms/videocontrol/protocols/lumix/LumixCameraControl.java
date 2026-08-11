@@ -370,6 +370,19 @@ public class LumixCameraControl {
 		params.put("value", "capture");
 		return sendGet(params);
 	}
+	
+	/**
+	 * Need to call this when shooting in burst mode, or it just keeps on going. 
+	 * Same as videoRecordStop(), but for burst mode 
+	 * @return
+	 */
+	public String stopCapture() {
+		// see https://github.com/gphoto/libgphoto2/blob/master/camlibs/lumix/lumix.c
+		Map<String, String> params = new HashMap<>();
+		params.put("mode", "camcmd");
+		params.put("value", "capture_cancel");
+		return sendGet(params);
+	}
 
 	public String videoRecordStart() {
 		Map<String, String> params = new HashMap<>();

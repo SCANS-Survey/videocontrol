@@ -1,8 +1,6 @@
 package loggerForms.videocontrol.protocols.amp;
 
-import java.awt.Window;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import javax.swing.SwingUtilities;
 
 import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.RecordState;
@@ -34,8 +33,14 @@ public class AMPProtocol extends VideoProtocol {
 	private String chanOpenCmd = "CRAT0007204Vtr1\n";
 	private String chanReaqCmd = "REAQ0007204Vtr1\n";
 	private String chanCloseCmd = "STOP0000\n";
+	
 	private String startCmd = "CMDS00042002\n";
 	private String stopCmd = "CMDS00042000\n";		
+
+	private enum TCPAnswer  {ACK, NACK, ERROR, UNKNOWN, NOANS};
+	private static final byte[] ack = {49, 48, 48, 49}; //1001
+	private static final byte[] nack = {49, 49, 49, 49}; //1111
+	private static final byte[] err = {50, 50, 50, 50}; //2222
 
 	public AMPProtocol(VideoControl videoControl, VideoProtocolProvider protocolProvider, DeviceParameters deviceParameters) {
 		super(videoControl, protocolProvider, deviceParameters);
@@ -43,79 +48,101 @@ public class AMPProtocol extends VideoProtocol {
 	}
 
 	@Override
-	public boolean startRecording() {
-		boolean ok = writeStringCommand(startCmd);
+	public String startRecording() {
+		System.out.println("Call AMP Start recording");
+		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.RECORDING, getDeviceParameters().recordLengthS));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+			}
+		});
+		String ok = writeStringCommand(startCmd);
 		return ok;
 	}
 
-	private boolean writeStringCommand(String command) {
+	private String writeStringCommand(String command) {
 		if (connectThread != null && connectThread.isAlive()) {
 			System.out.println("Still starting connection on " + getDeviceParameters().ipAddress);
-			return false;
+			return "Still connecting";
 		}
 		if (outputStream == null) {
 			System.out.println("no output steram for " + getDeviceParameters().ipAddress);
-			return false;
+			return "No output to device";
 		}
-		System.out.printf("Write command \"%s\" to %s", command, getDeviceParameters().ipAddress);
+		System.out.printf("Write command \"%s\" to %s\n", command, getDeviceParameters().ipAddress);
 		try {
 			outputStream.write(command.getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
+//			e.printStackTrace();
+			return "IO Exception";
 		}
-		return true;
+		return null;
 	}
 	
 	@Override
-	public boolean stopRecording() {
+	public String stopRecording() {
+		System.out.println("Call AMP Stop recording");
 		if (dataOutputStream == null) {
-			return false;
+			return "No output stream";
 		}
 		try {
 			dataOutputStream.writeBytes(stopCmd);
 		} catch (IOException e) {
 			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, e.getLocalizedMessage()));
-			return false;
+			return "IO Exception";
 		}
 		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.IDLE, 20));
-		return true;
+		return null;
 	}
 
 	@Override
-	public boolean connect() {
+	public String connect() {
 		disconnect();
+		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.CONNECTING, 0));
 		connectThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				openSocket();
+				String err = openSocket();
+				if (err != null) {
+					getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.ERROR, err));
+					return;
+				}
+				else {
+					err = writeStringCommand(chanOpenCmd);
+					if (err == null) {
+						getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.IDLE, err));
+					}
+					else {
+						getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.ERROR, err));
+					}
+				}
 			}
 		});
 		connectThread.start();
-		return true;
+		return "Starting connect";
 	}
 
-	protected boolean openSocket() {
+	protected String openSocket() {
 		AMPParameters ampParams = getDeviceParameters();
 		try {
 			tcpSocket = new Socket(ampParams.ipAddress, ampParams.port);
 		} catch (IOException e) {
 			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, e.getLocalizedMessage()));
-			return false;
+			return e.getMessage();
 		}
 		try {
 			inputStream = tcpSocket.getInputStream();
 		} catch (IOException e) {
 			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, e.getLocalizedMessage()));
-			return false;
+			return e.getMessage();
 		}
 		try {
 			outputStream = tcpSocket.getOutputStream();
 			dataOutputStream = new DataOutputStream(outputStream);
 		} catch (IOException e) {
 			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, e.getLocalizedMessage()));
-			return false;
+			return e.getMessage();
 		}
 		
 		// set up a TCP listener thread. 
@@ -131,7 +158,7 @@ public class AMPProtocol extends VideoProtocol {
 		
 		
 		connectThread = null;
-		return tcpSocket != null;
+		return tcpSocket != null ? null : "No Socket open";
 		
 	}
 
@@ -151,6 +178,8 @@ public class AMPProtocol extends VideoProtocol {
 				inputStream.read(bytes);
 				//				String aLine = br.readLine();
 				System.out.println("Line received: " + new String(bytes));
+				TCPAnswer answer = interpretReturn(bytes);
+				reportAnswer(answer);
 			} catch (IOException e) {
 				System.out.println(e.getMessage());
 			} catch (InterruptedException e) {
@@ -160,9 +189,58 @@ public class AMPProtocol extends VideoProtocol {
 		}
 		System.out.println("End TCP listening thread on " + getDeviceParameters().ipAddress);
 	}
+	
+	private void reportAnswer(TCPAnswer answer) {
+		if (answer == TCPAnswer.ERROR) {
+			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, "Error"));
+		}
+		else if (answer == TCPAnswer.ACK) {
+			
+		}
+		else {
+			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, "Unknown Error"));
+		}
+	}
+
+	private TCPAnswer interpretReturn(byte[] data) {
+		if (data == null) {
+			return TCPAnswer.NOANS;
+		}
+		else if (isSame(data, ack)) {
+			return TCPAnswer.ACK;
+		}
+		else if (isSame(data, nack)) {
+			return TCPAnswer.NACK;
+		}
+		else if (isSame(data, err)) {
+			return TCPAnswer.ERROR;
+		}
+		System.out.printf("Unknown tcp return:");
+		for (int i = 0; i < data.length; i++) {
+			System.out.printf("%d", data[i]);
+		}
+		System.out.printf(" \"%s\"\n", new String(data));
+		return TCPAnswer.UNKNOWN;
+		
+	}
+
+	private boolean isSame(byte[] data, byte[] tst) {
+		if (data == null) {
+			return false;
+		}
+		if (data.length < tst.length) {
+			return false;
+		}
+		for (int i = 0; i < tst.length; i++) {
+			if (data[i] != tst[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
-	public boolean disconnect() {
+	public String disconnect() {
 		if (connectThread != null && connectThread.isAlive()) {
 			connectThread.interrupt();
 			try {
@@ -206,7 +284,7 @@ public class AMPProtocol extends VideoProtocol {
 				ok = false;
 			}
 		}
-		return ok;
+		return ok ? null : "Error disconnecting";
 	}
 
 	@Override

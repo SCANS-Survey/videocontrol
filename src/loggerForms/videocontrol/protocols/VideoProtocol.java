@@ -54,27 +54,27 @@ public abstract class VideoProtocol {
 
 	/**
 	 * Connect to the video system and start to monitor for messages
-	 * @return
+	 * @return null if OK, otherwise an error message
 	 */
-	abstract public boolean connect();
+	abstract public String connect();
 	
 	/**
 	 * Disconnect to the video system and start to monitor for messages
-	 * @return
+	 * @return null if OK, otherwise an error message
 	 */
-	abstract public boolean disconnect();
+	abstract public String disconnect();
 	
 	/**
 	 * Start recording
-	 * @return true if OK
+	 * @return null if OK, otherwise an error message
 	 */
-	abstract public boolean startRecording();
+	abstract public String startRecording();
 	
 	/**
 	 * Stop recording
-	 * @return true if OK
+	 * @return null if OK, otherwise an error message
 	 */
-	abstract public boolean stopRecording();
+	abstract public String stopRecording();
 	
 	/**
 	 * @return the videoControl
@@ -123,14 +123,14 @@ public abstract class VideoProtocol {
 			// otherwise, always try to start, even if it's in an error state. Consider 
 			// waiting a bit if it's connecting ? Later perhaps. 
 			this.recordEndTime = now + params.recordLengthS*1000;
-			boolean ok = startRecording();
-			if (ok) {
+			String err = startRecording();
+			if (err == null) {
 				recordEndTimer.start();
 				reportState(RecordState.RECORDING, "", params.recordLengthS);
 			}
 			else {
-				String err = String.format("Unable to start %s using %s protocol", params.name, protocolProvider.getName());
-				reportState(RecordState.ERROR, err, 0);
+				String errMsg = String.format("Unable to start: %s", err);
+				reportState(RecordState.ERROR, errMsg, 0);
 			}
 			
 		}

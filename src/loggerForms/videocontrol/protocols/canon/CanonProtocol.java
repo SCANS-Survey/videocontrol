@@ -15,27 +15,27 @@ public class CanonProtocol extends VideoProtocol {
 	}
 
 	@Override
-	public boolean connect() {
+	public String connect() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 	@Override
-	public boolean disconnect() {
+	public String disconnect() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 	@Override
-	public boolean startRecording() {
+	public String startRecording() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 	@Override
-	public boolean stopRecording() {
+	public String stopRecording() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 	@Override

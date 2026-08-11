@@ -10,6 +10,7 @@ import javax.swing.JTextField;
 
 import PamView.dialog.PamGridBagContraints;
 import loggerForms.videocontrol.DeviceParameters;
+import loggerForms.videocontrol.protocols.ShootModeComboBox;
 import loggerForms.videocontrol.protocols.amp.AMPParameters;
 import loggerForms.videocontrol.swing.dialog.ProtocolDialogPanel;
 
@@ -22,14 +23,22 @@ public class LumixDialogPanel implements ProtocolDialogPanel {
 	private LumixProvider lumixProvider;
 
 	private LumixParameters lumixParameters;
+	
+	private ShootModeComboBox shootMode;
 
 	public LumixDialogPanel(LumixProvider lumixProvider) {
 		this.lumixProvider = lumixProvider;
 		mainPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new PamGridBagContraints();
-		mainPanel.add(new JLabel("ip address", JLabel.RIGHT), c);
+		mainPanel.add(new JLabel("ip address ", JLabel.RIGHT), c);
 		c.gridx++;
 		mainPanel.add(ipAddress = new JTextField(15));
+		c.gridx = 0;
+		c.gridy++;
+		mainPanel.add(new JLabel("Shoot mode s", JLabel.RIGHT), c);
+		c.gridx++;
+		mainPanel.add(shootMode = new ShootModeComboBox(), c);
+		
 		
 	}
 
@@ -45,11 +54,13 @@ public class LumixDialogPanel implements ProtocolDialogPanel {
 		}
 		lumixParameters = (LumixParameters) deviceParameters; 
 		ipAddress.setText(lumixParameters.ipAddress);
+		shootMode.setShootMode(lumixParameters.getShootMode());
 	}
 
 	@Override
 	public DeviceParameters getParams() {
 		lumixParameters.ipAddress = ipAddress.getText();
+		lumixParameters.setShootMode(shootMode.getShootMode());
 		return lumixParameters;
 	}
 

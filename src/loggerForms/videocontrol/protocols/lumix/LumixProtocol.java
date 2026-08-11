@@ -10,6 +10,7 @@ import loggerForms.videocontrol.DeviceParameters;
 import loggerForms.videocontrol.RecordState;
 import loggerForms.videocontrol.StatusMessage;
 import loggerForms.videocontrol.VideoControl;
+import loggerForms.videocontrol.protocols.ShootMode;
 import loggerForms.videocontrol.protocols.VideoProtocol;
 import loggerForms.videocontrol.protocols.VideoProtocolProvider;
 
@@ -21,9 +22,11 @@ import loggerForms.videocontrol.protocols.VideoProtocolProvider;
  */
 public class LumixProtocol extends VideoProtocol {
 
-	private LumixCameraControl lumixControl;
+	private LumixCameraControl lumixCamera;
 	
 	private volatile Thread connectThread;
+
+	private boolean connectionOk;
 
 	public LumixProtocol(VideoControl videoControl, VideoProtocolProvider protocolProvider,
 			DeviceParameters devideParameters) {
@@ -31,35 +34,42 @@ public class LumixProtocol extends VideoProtocol {
 	}
 
 	@Override
-	public boolean connect() {
+	public String connect() {
 		LumixParameters params = getDeviceParameters();
-		lumixControl = new LumixCameraControl(params.ipAddress);
-		if (connectThread != null) {
-			connectThread.interrupt();
+		lumixCamera = new LumixCameraControl(params.ipAddress);
+
+		connectionOk = lumixCamera.startCameraControl();
+		if (connectionOk == false) {
+			return "Can't connect";
 		}
-		getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.CONNECTING, null));
-		connectThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				boolean ok = lumixControl.startCameraControl();
-				if (ok == false) {
-					getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.ERROR, "Can't connect"));
-				}
-				else {
-					getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.IDLE, null));
-				}
-				connectThread = null;
-			}
-		});
-		connectThread.start();
 		
-		return true;
+//		if (connectThread != null) {
+//			connectThread.interrupt();
+//		}
+//		getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.CONNECTING, null));
+//		connectThread = new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				boolean ok = lumixControl.startCameraControl();
+//				if (ok == false) {
+//					getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.ERROR, "Can't connect"));
+//				}
+//				else {
+//					getVideoControl().notifyStateChange(LumixProtocol.this, new StatusMessage(RecordState.IDLE, null));
+//				}
+//				connectThread = null;
+//			}
+//		});
+//		connectThread.start();
+		
+		return "Connecting";
 	}
 
 	@Override
-	public boolean disconnect() {
-		// TODO Auto-generated method stub
-		return false;
+	public String disconnect() {
+		lumixCamera.videoRecordStop();
+		lumixCamera.stopCapture();
+		return null;
 	}
 
 	@Override
@@ -83,18 +93,51 @@ public class LumixProtocol extends VideoProtocol {
 		}
 	}
 
+	private boolean checkConnection() {
+		if (connectionOk == false) {
+			connect();
+		}
+		return connectionOk;
+	}
+	
 	@Override
-	public boolean startRecording() {
-		String resp = lumixControl.videoRecordStart();
-		boolean ok = lumixControl.checkResponse(resp);
-		return ok;
+	public String startRecording() {
+		if (checkConnection() == false) {
+			return "Connection Error";
+		}
+		ShootMode mode = getDeviceParameters().getShootMode();
+		String response = null;
+		switch(mode) {
+		case STILL:
+			response = lumixCamera.capturePhoto();
+			break;
+		case VIDEO:
+			response = lumixCamera.videoRecordStart();
+			break;
+		default:
+			return "Unknown shoot mode";
+		}
+		boolean ok = lumixCamera.checkResponse(response);
+		return ok ? null : "Error starting";
 	}
 
 	@Override
-	public boolean stopRecording() {
-		String resp = lumixControl.videoRecordStop();
-		boolean ok = lumixControl.checkResponse(resp);
-		return ok;
+	public String stopRecording() {
+		if (checkConnection() == false) {
+			return "Connection Error";
+		}
+		ShootMode mode = getDeviceParameters().getShootMode();
+		String response = null;
+		switch(mode) {
+		case STILL:
+			response = lumixCamera.stopCapture();
+			break;
+		case VIDEO:
+			response = lumixCamera.videoRecordStop();
+			break;
+		}
+		boolean ok = lumixCamera.checkResponse(response);
+		return ok ? null : "Error stopping";
 	}
 
 }
