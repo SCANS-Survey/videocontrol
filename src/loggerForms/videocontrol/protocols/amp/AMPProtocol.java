@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import javax.swing.SwingUtilities;
 
@@ -51,16 +52,16 @@ public class AMPProtocol extends VideoProtocol {
 	public String startRecording() {
 		System.out.println("Call AMP Start recording");
 		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.RECORDING, getDeviceParameters().recordLengthS));
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-			}
-		});
-		String ok = writeStringCommand(startCmd);
+		
+		String ok = writeAndWait(startCmd);
 		return ok;
 	}
-
-	private String writeStringCommand(String command) {
+	
+	private String writeAndWait(String command) {
+		return writeAndWait(command, 500);
+	}
+	
+	private String writeAndWait(String command, int timeout) {
 		if (connectThread != null && connectThread.isAlive()) {
 			System.out.println("Still starting connection on " + getDeviceParameters().ipAddress);
 			return "Still connecting";
@@ -68,6 +69,11 @@ public class AMPProtocol extends VideoProtocol {
 		if (outputStream == null) {
 			System.out.println("no output steram for " + getDeviceParameters().ipAddress);
 			return "No output to device";
+		}
+		try {
+			tcpSocket.setSoTimeout(timeout);
+		} catch (SocketException e) {
+			return ("Unable to set TCP socket timeout");
 		}
 		System.out.printf("Write command \"%s\" to %s\n", command, getDeviceParameters().ipAddress);
 		try {
@@ -77,51 +83,104 @@ public class AMPProtocol extends VideoProtocol {
 //			e.printStackTrace();
 			return "IO Exception";
 		}
-		return null;
+		return readData(timeout);
+		
 	}
+	
+	private String readData(int timeout) {
+		long now = System.currentTimeMillis();
+		byte[] data = null;
+		try {
+			while (true) {
+				if (inputStream.available() == 0) {
+					if (System.currentTimeMillis() - now > timeout) {
+						break;
+					}
+					Thread.sleep(50);
+					continue;
+				}
+				data = inputStream.readAllBytes();
+			}
+		} catch (IOException e) {
+			return ("Read error: " + e.getMessage());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (data == null) {
+			return "No data read from input stream";
+		}
+		return new String(data);
+	}
+
+//	private String writeStringCommand(String command) {
+//		if (connectThread != null && connectThread.isAlive()) {
+//			System.out.println("Still starting connection on " + getDeviceParameters().ipAddress);
+//			return "Still connecting";
+//		}
+//		if (outputStream == null) {
+//			System.out.println("no output steram for " + getDeviceParameters().ipAddress);
+//			return "No output to device";
+//		}
+//		System.out.printf("Write command \"%s\" to %s\n", command, getDeviceParameters().ipAddress);
+//		try {
+//			outputStream.write(command.getBytes());
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+////			e.printStackTrace();
+//			return "IO Exception";
+//		}
+//		return null;
+//	}
 	
 	@Override
 	public String stopRecording() {
-		System.out.println("Call AMP Stop recording");
-		if (dataOutputStream == null) {
-			return "No output stream";
-		}
-		try {
-			dataOutputStream.writeBytes(stopCmd);
-		} catch (IOException e) {
-			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, e.getLocalizedMessage()));
-			return "IO Exception";
-		}
-		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.IDLE, 20));
-		return null;
+//		System.out.println("Call AMP Stop recording");
+//		if (dataOutputStream == null) {
+//			return "No output stream";
+//		}
+//		try {
+//			dataOutputStream.writeBytes(stopCmd);
+//		} catch (IOException e) {
+//			getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.ERROR, e.getLocalizedMessage()));
+//			return "IO Exception";
+//		}
+//		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.IDLE, 20));
+//		return null;
+		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.IDLE, getDeviceParameters().recordLengthS));
+		return writeAndWait(stopCmd);
 	}
 
 	@Override
 	public String connect() {
 		disconnect();
 		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.CONNECTING, 0));
-		connectThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				String err = openSocket();
-				if (err != null) {
-					getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.ERROR, err));
-					return;
-				}
-				else {
-					err = writeStringCommand(chanOpenCmd);
-					if (err == null) {
-						getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.IDLE, err));
-					}
-					else {
-						getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.ERROR, err));
-					}
-				}
-			}
-		});
-		connectThread.start();
-		return "Starting connect";
+//		connectThread = new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				String err = openSocket();
+//				if (err != null) {
+//					getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.ERROR, err));
+//					return;
+//				}
+//				else {
+//					err = writeStringCommand(chanOpenCmd);
+//					if (err == null) {
+//						getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.IDLE, err));
+//					}
+//					else {
+//						getVideoControl().notifyStateChange(AMPProtocol.this, new StatusMessage(RecordState.ERROR, err));
+//					}
+//				}
+//			}
+//		});
+//		connectThread.start();
+		String ans = openSocket();
+		System.out.println("connect returned " + ans);
+		return writeAndWait(chanOpenCmd);
 	}
+	
+	
 
 	protected String openSocket() {
 		AMPParameters ampParams = getDeviceParameters();
@@ -153,12 +212,12 @@ public class AMPProtocol extends VideoProtocol {
 			}
 		});
 		listenerThread.start();
-		writeStringCommand(chanOpenCmd);
+		String ans = writeAndWait(chanOpenCmd);
 		getVideoControl().notifyStateChange(this, new StatusMessage(RecordState.IDLE, null));
 		
 		
 		connectThread = null;
-		return tcpSocket != null ? null : "No Socket open";
+		return tcpSocket != null ? ans : "No Socket open";
 		
 	}
 
